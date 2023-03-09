@@ -1,1 +1,58 @@
 
+import sqlite3
+import hashlib
+
+# connect to the database
+conn = sqlite3.connect('users.db')
+
+# create a table to store user information
+conn.execute('''CREATE TABLE IF NOT EXISTS users
+             (id INTEGER PRIMARY KEY AUTOINCREMENT,
+             username TEXT NOT NULL UNIQUE,
+             password TEXT NOT NULL);''')
+
+# function to register a new user
+def register():
+    username = input("Enter a username: ")
+    password = input("Enter a password: ")
+
+    # hash the password using SHA256
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+    # insert the user's information into the database
+    conn.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
+    conn.commit()
+    print("User registered successfully.")
+
+# function to log in a user
+def login():
+    username = input("Enter your username: ")
+    password = input("Enter your password: ")
+
+    # hash the password using SHA256
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+    # check if the username and password match a record in the database
+    cursor = conn.execute("SELECT * FROM users WHERE username=? AND password=?", (username, hashed_password))
+    row = cursor.fetchone()
+
+    if row is None:
+        print("Incorrect username or password.")
+    else:
+        print("Login successful.")
+
+# main program loop
+while True:
+    print("\n1. Register")
+    print("2. Login")
+    print("3. Quit")
+    choice = input("Enter your choice: ")
+
+    if choice == "1":
+        register()
+    elif choice == "2":
+        login()
+    elif choice == "3":
+        break
+    else:
+        print("Invalid choice.")
